@@ -76,10 +76,20 @@ window = Tk()
 window.title("Panasonic Remote GUI")
 window.geometry('350x200')
 
+menubar=Menu(window)
+filemenu=Menu(menubar,tearoff=0)
+helpmenu=Menu(menubar,tearoff=0)
+
+filemenu.add_command(label="Quit",command=window.quit)
+helpmenu.add_command(label="About",command=lambda :shall(listTab))
+
+menubar.add_cascade(label="File",menu=filemenu)
+menubar.add_cascade(label="Help",menu=helpmenu)
+
 tabctrl=ttk.Notebook(window)
 lball=Label(window,text="Send all: ")
 listTab=[]
-btallsh=Button(window, text="SHUT",command=lambda: shall(listTab))
+btallsh=Button(window, text="CLOSE",command=lambda: shall(listTab))
 btallop=Button(window, text="OPEN",command=lambda: opall(listTab))
 btallsw=Button(window, text="SWITCH",command=lambda: swall(listTab))
 # "ALL [SHUT] [OPEN] [SWITCH]"
@@ -101,8 +111,8 @@ class tkTab(object):
         self.strstatus=StringVar()
         self.lbstat=Label(self.tab, textvariable=self.strstatus,anchor=W)
 
-        self.btno = Button(self.tab, text="OFF",command=lambda: shoff(self))
-        self.btnf = Button(self.tab, text="ON",command=lambda: shon(self))
+        self.btno = Button(self.tab, text="OPEN",command=lambda: shoff(self))
+        self.btnf = Button(self.tab, text="CLOSE",command=lambda: shon(self))
         self.btstat=Button(self.tab, text="Refresh",command=lambda: stat(self))
 
         self.btno.grid(column=2, row=0)
@@ -126,4 +136,9 @@ lball.pack(side=LEFT,padx=10)
 btallsh.pack(side=LEFT)
 btallop.pack(side=LEFT)
 btallsw.pack(side=LEFT)
+
+window.bind("o", lambda x: shall(listTab))
+window.bind("p", lambda x: opall(listTab))
+window.bind("<Return>", lambda x:swall(listTab))
+window.config(menu=menubar)
 window.mainloop()
