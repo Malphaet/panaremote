@@ -71,6 +71,7 @@ print("Connecting to hosts")
 listVP=[request.VP('192.168.0.4'),
 request.VP('192.168.0.8')]
 print("All hosts initialised")
+
 window = Tk()
 
 window.title("Panasonic Remote GUI")
@@ -80,8 +81,8 @@ menubar=Menu(window)
 filemenu=Menu(menubar,tearoff=0)
 helpmenu=Menu(menubar,tearoff=0)
 
-filemenu.add_command(label="Quit",command=window.quit)
-helpmenu.add_command(label="About",command=lambda :shall(listTab))
+filemenu.add_command(label="Quit",command=window.quit,accelerator="Ctrl+q")
+helpmenu.add_command(label="About",command=lambda :popupmsg("About","Panaremote.py was made by Maximilien Rigaut\nPlease use, redistribute and fork @github: \n https://github.com/Malphaet/panaremote"))
 
 menubar.add_cascade(label="File",menu=filemenu)
 menubar.add_cascade(label="Help",menu=helpmenu)
@@ -93,6 +94,16 @@ btallsh=Button(window, text="CLOSE",command=lambda: shall(listTab))
 btallop=Button(window, text="OPEN",command=lambda: opall(listTab))
 btallsw=Button(window, text="SWITCH",command=lambda: swall(listTab))
 # "ALL [SHUT] [OPEN] [SWITCH]"
+
+def popupmsg(title,msg):
+    popup = Tk()
+    popup.wm_title(title)
+    label = ttk.Label(popup, text=msg)
+    label.pack(side="top", fill="x", pady=10)
+    B1 = ttk.Button(popup, text="Okay", command = popup.destroy)
+    B1.pack()
+    popup.mainloop()
+
 class tkTab(object):
     """A tk tab"""
     def __init__(self, vp):
@@ -140,5 +151,7 @@ btallsw.pack(side=LEFT)
 window.bind("o", lambda x: shall(listTab))
 window.bind("p", lambda x: opall(listTab))
 window.bind("<Return>", lambda x:swall(listTab))
+window.bind_all("<Control-q>",lambda x:window.quit())
+
 window.config(menu=menubar)
 window.mainloop()
