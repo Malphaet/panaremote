@@ -1,3 +1,4 @@
+from __future__ import print_function
 import urllib2,sys
 import re
 try:
@@ -36,7 +37,7 @@ def openURL(cmd):
         return page
     except Exception as e:
         if isinstance(e,urllib2.URLError):
-            print(" > Can't reach address: {}".format(url))
+            print(" [Error] Can't reach address: {}".format(url),file=sys.stderr)
             pass
         return None
 
@@ -54,7 +55,8 @@ def openSTATUS(cmd):
 
 def dprint(st):
     if debug:
-        print(st)
+        print(st,file=sys.stderr)
+
 ip="192.168.0.8"
 shutter_on=makeURL(ip,"shutter_on")
 shutter_off=makeURL(ip,"shutter_off")
@@ -65,7 +67,7 @@ class VP(object):
     def __init__(self, ip):
         super(VP, self).__init__()
         self.ip = ip
-        print("Initialing {}".format(ip))
+        print("Initialing {}".format(ip),file=sys.stderr)
         self.st_shutter=None
         self.st_osd=None
         self.st_input=None
@@ -74,17 +76,19 @@ class VP(object):
         self.status=makeSTATUS(ip)
         self.getStatus()
         if self.st_shutter==None:
-            print(" > Unreachable")
+            print(" [{}] Unreachable".format(ip),file=sys.stderr)
         else:
-            print(" > Connected")
+            print(" [{}] Connected".format(ip),file=sys.stderr)
 
     def shutterOn(self):
-        openURL(self.shutter_on)
-        self.st_shutter='On'
+        s=openURL(self.shutter_on)
+        if s!=None:
+            self.st_shutter='On'
 
     def shutterOff(self):
-        openURL(self.shutter_off)
-        self.st_shutter='Off'
+        s=openURL(self.shutter_off)
+        if s!=None:
+            self.st_shutter='Off'
 
     def getStatus(self):
         stat=openSTATUS(self.status)

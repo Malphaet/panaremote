@@ -4,7 +4,7 @@ try:
 except:
     from Tkinter import *
     import ttk
-
+import sys
 import request
 
 def shon(tab):
@@ -27,21 +27,36 @@ def stat(tab):
     setstat(tab)
 
 def setstat(tab):
+    online=True
     if tab.vp.st_shutter=='Off':
         tab.btno.config(relief=SUNKEN)
         tab.btnf.config(relief=RAISED)
-    else:
+    elif tab.vp.st_shutter=='On':
         tab.btnf.config(relief=SUNKEN)
         tab.btno.config(relief=RAISED)
-    tab.strstatus.set(tab.vp.strStatus())
+    else:
+        tab.btnf.config(relief=RAISED)
+        tab.btno.config(relief=RAISED)
+        online=False
 
+    tab.strstatus.set(tab.vp.strStatus())
+    if not online:
+        tab.lbstat.config(fg="red")
+    else:
+        tab.lbstat.config(fg='black')
+
+# NOT CLEVER AT ALL
 def shall(listtab):
     for vp in listVP:
         vp.shutterOn()
+    for tab in listtab:
+        setstat(tab)
 
 def opall(listtab):
     for vp in listVP:
         vp.shutterOff()
+    for tab in listtab:
+        setstat(tab)
 
 def swall(listtab):
     for vp in listVP:
@@ -49,22 +64,24 @@ def swall(listtab):
             vp.shutterOff()
         else:
             vp.shutterOn()
-
+    for tab in listtab:
+        setstat(tab)
 
 print("Connecting to hosts")
 listVP=[request.VP('192.168.0.4'),
 request.VP('192.168.0.8')]
-
+print("All hosts initialised")
 window = Tk()
 
 window.title("Panasonic Remote GUI")
 window.geometry('350x200')
 
 tabctrl=ttk.Notebook(window)
-lball=Label(window,text="ALL")
-btallsh=Button(window, text="SHUT",command=lambda: shall())
-btallop=Button(window, text="OPEN",command=lambda: opall())
-btallsw=Button(window, text="SWITCH",command=lambda: swall())
+lball=Label(window,text="Send all: ")
+listTab=[]
+btallsh=Button(window, text="SHUT",command=lambda: shall(listTab))
+btallop=Button(window, text="OPEN",command=lambda: opall(listTab))
+btallsw=Button(window, text="SWITCH",command=lambda: swall(listTab))
 # "ALL [SHUT] [OPEN] [SWITCH]"
 class tkTab(object):
     """A tk tab"""
@@ -100,12 +117,12 @@ class tkTab(object):
         self.tab.bind("z", lambda x: shoff(self))
         self.tab.bind("<space>", lambda x:toggle(self))
 
-listTab=[]
 for vp in listVP:
     listTab.append(tkTab(vp))
     setstat(listTab[-1])
 
 tabctrl.pack(expand=1,fill='both')
+lball.pack(side=LEFT,padx=10)
 btallsh.pack(side=LEFT)
 btallop.pack(side=LEFT)
 btallsw.pack(side=LEFT)
