@@ -54,6 +54,37 @@ shutter_on=makeURL(ip,"shutter_on")
 shutter_off=makeURL(ip,"shutter_off")
 status=makeSTATUS(ip)
 
+class VP(object):
+    """Class to acess a VP."""
+    def __init__(self, ip):
+        super(VP, self).__init__()
+        self.ip = ip
+        self.st_shutter=None
+        self.st_osd=None
+        self.st_input=None
+        self.shutter_on=makeURL(ip,"shutter_on")
+        self.shutter_off=makeURL(ip,"shutter_off")
+        self.status=makeSTATUS(ip)
+        self.getStatus()
+
+    def shutterOn(self):
+        openURL(self.shutter_on)
+        self.st_shutter='On'
+
+    def shutterOff(self):
+        openURL(self.shutter_off)
+        self.st_shutter='Off'
+
+    def getStatus(self):
+        self.st_shutter,self.st_osd,self.st_input=openSTATUS(self.status)
+        return self
+
+    def __str__(self):
+        return self.ip
+
+    def strStatus(self):
+        return 'OSD: {} - INPUT: {}'.format(self.st_osd,self.st_input)
+
 if __name__ == '__main__':
     try:
         cmd=sys.argv[1]
