@@ -6,6 +6,7 @@ except:
     import tkinter as tk
 
 reinp=re.compile('INPUT&nbsp;(?P<np>\w+)')
+debug=True
 
 def makeURL(ip,cmd):
     url = 'http://{}/cgi-bin/proj_ctl.cgi?key={}&lang=e&osd=off'.format(ip,cmd)
@@ -34,7 +35,9 @@ def openURL(cmd):
         page = urllib2.urlopen(url,timeout=2).read()
         return page
     except Exception as e:
-        print(e)
+        if isinstance(e,urllib2.URLError):
+            print(" > Can't reach address: {}".format(url))
+            pass
         return None
 
 def openSTATUS(cmd):
@@ -49,6 +52,9 @@ def openSTATUS(cmd):
     inp=reinp.search(text).groups()[0]
     return sh,osd,inp
 
+def dprint(st):
+    if debug:
+        print(st)
 ip="192.168.0.8"
 shutter_on=makeURL(ip,"shutter_on")
 shutter_off=makeURL(ip,"shutter_off")
@@ -59,6 +65,7 @@ class VP(object):
     def __init__(self, ip):
         super(VP, self).__init__()
         self.ip = ip
+        print("Initialing {}".format(ip))
         self.st_shutter=None
         self.st_osd=None
         self.st_input=None
@@ -66,6 +73,10 @@ class VP(object):
         self.shutter_off=makeURL(ip,"shutter_off")
         self.status=makeSTATUS(ip)
         self.getStatus()
+        if self.st_shutter==None:
+            print(" > Unreachable")
+        else:
+            print(" > Connected")
 
     def shutterOn(self):
         openURL(self.shutter_on)
@@ -76,14 +87,20 @@ class VP(object):
         self.st_shutter='Off'
 
     def getStatus(self):
-        self.st_shutter,self.st_osd,self.st_input=openSTATUS(self.status)
+        stat=openSTATUS(self.status)
+        if stat==None:
+            stat=None,None,None
+        self.st_shutter,self.st_osd,self.st_input=stat
         return self
 
     def __str__(self):
         return self.ip
 
     def strStatus(self):
-        return 'OSD: {} - INPUT: {}'.format(self.st_osd,self.st_input)
+        if self.st_osd!=None:
+            return 'OSD: {} - INPUT: {}'.format(self.st_osd,self.st_input)
+        else:
+            return 'Host: {} OFFLINE'.format(self.ip)
 
 if __name__ == '__main__':
     try:
