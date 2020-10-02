@@ -68,7 +68,7 @@ def swall(listtab):
         setstat(tab)
 
 print("Connecting to hosts")
-listVP=[request.VP('192.168.0.4'),
+listVP=[#request.VP('192.168.0.4'),
 request.VP('192.168.0.8')]
 print("All hosts initialised")
 

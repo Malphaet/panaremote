@@ -1,44 +1,49 @@
 from __future__ import print_function
-import urllib2,sys
-import re
+import urllib3 as urllib
+#import urllib2
+
+import re,sys
 try:
     import Tkinter as tk
 except:
     import tkinter as tk
 
+
+_username = 'admin1'
+_password = 'panasonic'
+http = urllib.PoolManager()
+headers = urllib.make_headers(basic_auth='{}:{}'.format(_username,_password))
 reinp=re.compile('INPUT&nbsp;(?P<np>\w+)')
 debug=True
 
 def makeURL(ip,cmd):
     url = 'http://{}/cgi-bin/proj_ctl.cgi?key={}&lang=e&osd=off'.format(ip,cmd)
-    username = 'admin1'
-    password = 'panasonic'
-    p = urllib2.HTTPPasswordMgrWithDefaultRealm()
-
-    p.add_password(None, url, username, password)
-    return p,url
+    # username , password = _username , _password
+    # p = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    # p.add_password(None, url, username, password)
+    return url
 
 def makeSTATUS(ip):
     url='http://{}/cgi-bin/get_osd.cgi?lang=e'.format(ip)
-    username = 'admin1'
-    password = 'panasonic'
-    p = urllib2.HTTPPasswordMgrWithDefaultRealm()
-
-    p.add_password(None, url, username, password)
-    return p,url
+    # username , password = _username , _password
+    # p = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    # p.add_password(None, url, username, password)
+    return url
 
 def openURL(cmd):
     try:
-        p,url=cmd
-        handler = urllib2.HTTPBasicAuthHandler(p)
-        opener = urllib2.build_opener(handler)
-        urllib2.install_opener(opener)
-        page = urllib2.urlopen(url,timeout=2).read()
-        return page
+        url=cmd
+        r = http.request('GET', url, headers=headers, timeout=2.5)
+
+        # handler = urllib2.HTTPBasicAuthHandler(p)
+        # opener = urllib2.build_opener(handler)
+        # urllib2.install_opener(opener)
+        # page = urllib2.urlopen(url,timeout=2).read()
+        return r.data.decode("utf-8")
     except Exception as e:
-        if isinstance(e,urllib2.URLError):
+        if isinstance(e,urllib.exceptions.HTTPError):
             print(" [Error] Can't reach address: {}".format(url),file=sys.stderr)
-            pass
+            print(e)
         return None
 
 def openSTATUS(cmd):
