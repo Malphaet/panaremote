@@ -1,5 +1,7 @@
 from __future__ import print_function
 import urllib3 as urllib
+import mido
+import threading,time
 #import urllib2
 
 import re,sys
@@ -8,7 +10,8 @@ try:
 except:
     import tkinter as tk
 
-
+_status=threading.Lock()
+_waittime=0.7
 _username = 'admin1'
 _password = 'panasonic'
 http = urllib.PoolManager()
@@ -18,27 +21,16 @@ debug=True
 
 def makeURL(ip,cmd):
     url = 'http://{}/cgi-bin/proj_ctl.cgi?key={}&lang=e&osd=off'.format(ip,cmd)
-    # username , password = _username , _password
-    # p = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    # p.add_password(None, url, username, password)
     return url
 
 def makeSTATUS(ip):
     url='http://{}/cgi-bin/get_osd.cgi?lang=e'.format(ip)
-    # username , password = _username , _password
-    # p = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    # p.add_password(None, url, username, password)
     return url
 
 def openURL(cmd):
     try:
         url=cmd
         r = http.request('GET', url, headers=headers, timeout=2.5)
-
-        # handler = urllib2.HTTPBasicAuthHandler(p)
-        # opener = urllib2.build_opener(handler)
-        # urllib2.install_opener(opener)
-        # page = urllib2.urlopen(url,timeout=2).read()
         return r.data.decode("utf-8")
     except Exception as e:
         if isinstance(e,urllib.exceptions.HTTPError):
@@ -79,6 +71,7 @@ class VP(object):
         self.shutter_on=makeURL(ip,"shutter_on")
         self.shutter_off=makeURL(ip,"shutter_off")
         self.status=makeSTATUS(ip)
+        self.requesting=False
         self.getStatus()
         if self.st_shutter==None:
             print(" [{}] Unreachable".format(ip),file=sys.stderr)
@@ -86,20 +79,29 @@ class VP(object):
             print(" [{}] Connected".format(ip),file=sys.stderr)
 
     def shutterOn(self):
+        _status.acquire()
         s=openURL(self.shutter_on)
+        time.sleep(_waittime)
         if s!=None:
             self.st_shutter='On'
+        _status.release()
 
     def shutterOff(self):
+        _status.acquire()
         s=openURL(self.shutter_off)
+        time.sleep(_waittime)
         if s!=None:
             self.st_shutter='Off'
+        _status.release()
+
 
     def getStatus(self):
+        _status.acquire()
         stat=openSTATUS(self.status)
         if stat==None:
             stat=None,None,None
         self.st_shutter,self.st_osd,self.st_input=stat
+        _status.release()
         return self
 
     def __str__(self):
