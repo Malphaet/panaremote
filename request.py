@@ -102,7 +102,7 @@ class VP(object):
             stat=None,None,None
         self.st_shutter,self.st_osd,self.st_input=stat
         _status.release()
-        return self
+        return stat
 
     def __str__(self):
         return self.ip
