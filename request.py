@@ -97,7 +97,12 @@ class VP(object):
 
     def getStatus(self):
         _status.acquire()
-        stat=openSTATUS(self.status)
+        try:
+            stat=openSTATUS(self.status)
+        except Exception as e:
+            print("[PRM:ERROR] Can't get status of vp",str(self))
+            stat=None
+            
         if stat==None:
             stat=None,None,None
         self.st_shutter,self.st_osd,self.st_input=stat
